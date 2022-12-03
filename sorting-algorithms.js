@@ -4,8 +4,7 @@ function swap(arr, i, j) {
     arr[j] = tmp;
 }
 
-function selectionSort(arr, onUpdate=console.log) {
-    onUpdate(arr);
+function selectionSort(arr) {
     for (let i = 0; i < arr.length - 1; i++) {
         let minIdx = i;
         for (let j = i + 1; j < arr.length; j++) {
@@ -14,25 +13,22 @@ function selectionSort(arr, onUpdate=console.log) {
             }
         }
         swap(arr, i, minIdx);
-        onUpdate(arr);
     }
 
     return arr;
 }
 
-function insertionSort(arr, onUpdate=console.log) {
-    onUpdate(arr);
+function insertionSort(arr) {
     for (let i = 1; i < arr.length; i++) {
         for (let j = i; j > 0 && arr[j] < arr[j - 1]; j--) {
             swap(arr, j, j - 1);
         }
-        onUpdate(arr);
     }
 
     return arr;
 }
 
-function mergeSort(arr, onUpdate=console.log) {
+function mergeSort(arr) {
 
     function merge(arr, workArr, leftIdx, middleIdx, rightIdx) {
         let i = leftIdx;
@@ -65,7 +61,7 @@ function mergeSort(arr, onUpdate=console.log) {
     return arr;
 }
 
-function heapSort(arr, onUpdate=console.log) {
+function heapSort(arr) {
 
     function maxHeapify(arr, i, end) {
         let left = 2 * i + 1;
@@ -131,98 +127,148 @@ function quickSort(arr, lo=null, hi=null) {
     return arr;
 }
 
-// TEST CASES
+function bubbleSort(arr) {
+    while (true) {
+        didSwap = false
+        for (let i = 1; i < arr.length; i++) {
+            if (arr[i] < arr[i - 1]) {
+                swap(arr, i, i - 1);
+                didSwap = true
+            }
+        }
+        if (!didSwap) {
+            break
+        }
+    }
 
-function compareNumbers(a, b) {
-    return a - b;
+    return arr
 }
 
-let arr10Items = randArr(10);
-let arr10ItemsSorted = [...arr10Items].sort(compareNumbers);
-let arr100Items = randArr(100);
-let arr100ItemsSorted = [...arr100Items].sort(compareNumbers);
-let arr1000Items = randArr(1000);
-let arr1000ItemsSorted = [...arr1000Items].sort(compareNumbers);
-let arr10000Items = randArr(10000);
-let arr10000ItemsSorted = [...arr10000Items].sort(compareNumbers);
-
-let cases = [
-    {
-        name: 'three elements',
-        arr: [3, 1, 2],
-        expected: [1, 2, 3],
-    },
-    {
-        name: 'two elements',
-        arr: [2, 1],
-        expected: [1, 2],
-    },
-    {
-        name: 'empty array',
-        arr: [],
-        expected: [],
-    },
-    {
-        name: 'one element',
-        arr: [1],
-        expected: [1],
-    },
-    {
-        name: 'already sorted',
-        arr: [1, 2, 3],
-        expected: [1, 2, 3],
-    },
-    {
-        name: 'four elements',
-        arr: [5, 1, 3, 2],
-        expected: [1, 2, 3, 5],
-    },
-
-    {
-        name: 'all sequential',
-        arr: [5, 4, 1, 3, 2],
-        expected: [1, 2, 3, 4, 5],
-    },
-    {
-        name: 'with duplicate values',
-        arr: [6, 6, 3, 3, 3, 1, 3, 2],
-        expected: [1, 2, 3, 3, 3, 3, 6, 6],
-    },
-    {
-        name: 'random array of 10 items',
-        arr: arr10Items,
-        expected: arr10ItemsSorted,
-    },
-    {
-        name: 'random array of 100 items',
-        arr: arr100Items,
-        expected: arr100ItemsSorted,
-    },
-    {
-        name: 'random array of 1000 items',
-        arr: arr1000Items,
-        expected: arr1000ItemsSorted,
-    },
-    {
-        name: 'random array of 10000 items',
-        arr: arr10000Items,
-        expected: arr10000ItemsSorted,
-    },
-]
-
-function randArr(len) {
-    let arr = [];
-    for (let i = 0; i < len; i++) {
-        let randVal = Math.floor(Math.random() * 1000);
-        arr.push(randVal);
+function shellSort(arr) {
+    gaps = [701, 301, 132, 57, 23, 10, 4, 1]  // Ciura gap sequence
+    for (let i = 0; i < gaps.length; i++) {
+        let gap = gaps[i];
+        for (let j = gap; j < arr.length; j++) {
+            let tmp = arr[j];
+            let k;
+            for (k = j; k >= gap && arr[k - gap] > tmp; k -= gap) {
+                arr[k] = arr[k - gap];
+            }
+            arr[k] = tmp;
+        }
     }
     return arr;
 }
 
-cases.forEach(function(c) {
-    console.log(`Running test "${c.name}"...`);
-    let result = quickSort(c.arr);
-    if (c.expected.length != result.length || !c.expected.every(function(value, index) { return value === result[index]})) {
-        console.error(`Got ${JSON.stringify(result)}, want ${JSON.stringify(c.expected)}`);
+// TEST CASES
+
+
+function runTests() {
+
+    function compareNumbers(a, b) {
+        return a - b;
     }
-});
+
+    function randArr(len) {
+        let arr = [];
+        for (let i = 0; i < len; i++) {
+            let randVal = Math.floor(Math.random() * 1000);
+            arr.push(randVal);
+        }
+        return arr;
+    }
+    const sortFunctions = [
+        insertionSort,
+        selectionSort,
+        mergeSort,
+        heapSort,
+        quickSort,
+        bubbleSort,
+        shellSort,
+    ];
+
+    sortFunctions.forEach(function(sort) {
+        let arr10Items = randArr(10);
+        let arr10ItemsSorted = [...arr10Items].sort(compareNumbers);
+        let arr100Items = randArr(100);
+        let arr100ItemsSorted = [...arr100Items].sort(compareNumbers);
+        let arr1000Items = randArr(1000);
+        let arr1000ItemsSorted = [...arr1000Items].sort(compareNumbers);
+        let arr10000Items = randArr(10000);
+        let arr10000ItemsSorted = [...arr10000Items].sort(compareNumbers);
+
+        let cases = [
+            {
+                name: 'three elements',
+                arr: [3, 1, 2],
+                expected: [1, 2, 3],
+            },
+            {
+                name: 'two elements',
+                arr: [2, 1],
+                expected: [1, 2],
+            },
+            {
+                name: 'empty array',
+                arr: [],
+                expected: [],
+            },
+            {
+                name: 'one element',
+                arr: [1],
+                expected: [1],
+            },
+            {
+                name: 'already sorted',
+                arr: [1, 2, 3],
+                expected: [1, 2, 3],
+            },
+            {
+                name: 'four elements',
+                arr: [5, 1, 3, 2],
+                expected: [1, 2, 3, 5],
+            },
+
+            {
+                name: 'all sequential',
+                arr: [5, 4, 1, 3, 2],
+                expected: [1, 2, 3, 4, 5],
+            },
+            {
+                name: 'with duplicate values',
+                arr: [6, 6, 3, 3, 3, 1, 3, 2],
+                expected: [1, 2, 3, 3, 3, 3, 6, 6],
+            },
+            {
+                name: 'random array of 10 items',
+                arr: arr10Items,
+                expected: arr10ItemsSorted,
+            },
+            {
+                name: 'random array of 100 items',
+                arr: arr100Items,
+                expected: arr100ItemsSorted,
+            },
+            {
+                name: 'random array of 1000 items',
+                arr: arr1000Items,
+                expected: arr1000ItemsSorted,
+            },
+            {
+                name: 'random array of 10000 items',
+                arr: arr10000Items,
+                expected: arr10000ItemsSorted,
+            },
+        ]
+
+        cases.forEach(function(c) {
+            console.log(`[${sort.name}] Running test "${c.name}"...`);
+            let result = sort(c.arr);
+            if (c.expected.length != result.length || !c.expected.every(function(value, index) { return value === result[index]})) {
+                console.error(`Got ${JSON.stringify(result)}, want ${JSON.stringify(c.expected)}`);
+            }
+        });
+    });
+}
+
+runTests();
