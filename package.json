@@ -1,0 +1,27 @@
+{
+  "name": "sorting-algorithms",
+  "version": "0.0.1",
+  "description": "Sorting algorithms implemented in JavaScript with step-by-step visualizations",
+  "type": "module",
+  "main": "sorting-algorithms.js",
+  "scripts": {
+    "test": "node sorting-algorithms-test.js",
+    "start": "npx -y live-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kimbo/sorting-algorithms.git"
+  },
+  "keywords": [
+    "javascript",
+    "algorithms",
+    "sorting",
+    "sorting-algorithms"
+  ],
+  "author": "kimbo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kimbo/sorting-algorithms/issues"
+  },
+  "homepage": "https://github.com/kimbo/sorting-algorithms#readme"
+}
