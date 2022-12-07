@@ -182,8 +182,46 @@ function combSort(arr) {
     return arr;
 }
 
-// TEST CASES
+function radixSort(arr) {
 
+    function numDigits(n, base=10) {
+        let i;
+        for (i = 1; base**(i-1) < n; i++) {}
+        return Math.max(Math.floor(i-1), 1);
+    }
+
+    function getDigit(num, i) {
+        return Math.floor(num / (10**(i-1))) % 10;
+    }
+
+    let maxNumDigits = 0;
+    for (let i = 0; i < arr.length; i++) {
+        let nDigits = numDigits(arr[i]);
+        if (nDigits > maxNumDigits) {
+            maxNumDigits = nDigits;
+        }
+    }
+
+    for (let digitPos = 1; digitPos <= maxNumDigits; digitPos++) {
+        let buckets = [[],[],[],[],[],[],[],[],[],[]];
+        for (let i = 0; i < arr.length; i++) {
+            let digit = getDigit(arr[i], digitPos);
+            if (isNaN(digit)) {
+                continue
+            }
+            buckets[digit].push(arr[i]);
+        }
+        for (let i = 0, k = 0; i < buckets.length; i++) {
+            for (let j = 0; j < buckets[i].length; j++) {
+                arr[k++] = buckets[i][j];
+            }
+        }
+    }
+
+    return arr;
+}
+
+// TEST CASES
 
 function runTests() {
 
@@ -208,6 +246,7 @@ function runTests() {
         bubbleSort,
         shellSort,
         combSort,
+        radixSort,
     ];
 
     sortFunctions.forEach(function(sort) {
