@@ -183,6 +183,62 @@ function combSort(arr) {
 }
 
 function radixSort(arr) {
+    const BITS_IN_BYTE = 8;
+    const RADIX = 256;
+    const MASK = 0xFF;
+
+    function getNumBits(val) {
+        let i;
+        for (i = 1; 2**(i-1) < val; i++) {}
+        return Math.max(Math.floor(i-1), 1);
+    }
+
+    function getByte(val, idx) {
+        return (val >> BITS_IN_BYTE * idx) & MASK;
+    }
+
+    let buckets = Array(RADIX).fill();
+    let maxNumBits = 0;
+    for (let i = 0; i < arr.length; i++) {
+        let nbits = getNumBits(arr[i]);
+        if (nbits > maxNumBits) {
+            maxNumBits = nbits;
+        }
+    }
+    let maxNumBytes = Math.max(maxNumBits / BITS_IN_BYTE, 4);
+    for (let bytePos = 0; bytePos < maxNumBytes; bytePos++) {
+        buckets = buckets.map(() => []);
+        for (let i = 0; i < arr.length; i++) {
+            let byte = getByte(arr[i], bytePos);
+            buckets[byte].push(arr[i]);
+        }
+        if (bytePos == maxNumBytes - 1) {
+            let k = 0;
+            for (let i = buckets.length / 2; i < buckets.length; i++) {
+                for (let j = 0; j < buckets[i].length; j++) {
+                    arr[k++] = buckets[i][j];
+                }
+            }
+            for (let i = 0; i < buckets.length / 2; i++) {
+                for (let j = 0; j < buckets[i].length; j++) {
+                    arr[k++] = buckets[i][j];
+                }
+            }
+        } else {
+            for (let i = 0, k = 0; i < buckets.length; i++) {
+                for (let j = 0; j < buckets[i].length; j++) {
+                    arr[k++] = buckets[i][j];
+                }
+            }
+        }
+    }
+
+    return arr;
+}
+
+// This probably isn't the most efficient way to do radix sort
+// since the radix is 10, here it is.
+function radixSortDecimalDigits(arr) {
 
     function numDigits(n, base=10) {
         let i;
@@ -202,8 +258,9 @@ function radixSort(arr) {
         }
     }
 
+    let buckets = Array(10).fill();
     for (let digitPos = 1; digitPos <= maxNumDigits; digitPos++) {
-        let buckets = [[],[],[],[],[],[],[],[],[],[]];
+        buckets = buckets.map(() => []);
         for (let i = 0; i < arr.length; i++) {
             let digit = getDigit(arr[i], digitPos);
             if (isNaN(digit)) {
@@ -232,11 +289,12 @@ function runTests() {
     function randArr(len) {
         let arr = [];
         for (let i = 0; i < len; i++) {
-            let randVal = Math.floor(Math.random() * 1000);
+            let randVal = Math.floor(Math.random() * 20000 - 10000);
             arr.push(randVal);
         }
         return arr;
     }
+
     const sortFunctions = [
         insertionSort,
         selectionSort,
@@ -247,6 +305,7 @@ function runTests() {
         shellSort,
         combSort,
         radixSort,
+        radixSortDecimalDigits,
     ];
 
     sortFunctions.forEach(function(sort) {
@@ -327,7 +386,7 @@ function runTests() {
             console.log(`[${sort.name}] Running test "${c.name}"...`);
             let result = sort(c.arr);
             if (c.expected.length != result.length || !c.expected.every(function(value, index) { return value === result[index]})) {
-                console.error(`Got ${JSON.stringify(result)}, want ${JSON.stringify(c.expected)}`);
+                console.error(`Got ${JSON.stringify(result, null, 2)}, want ${JSON.stringify(c.expected, null, 2)}`);
             }
         });
     });
