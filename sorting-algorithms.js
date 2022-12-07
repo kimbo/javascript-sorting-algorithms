@@ -1,5 +1,7 @@
 function swap(arr, i, j) {
-    arr[i], arr[j] = arr[j], arr[i]
+    let tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
 }
 
 function selectionSort(arr) {
@@ -234,18 +236,18 @@ function radixSort(arr) {
     return arr;
 }
 
-// This probably isn't the most efficient way to do radix sort
-// since the radix is 10, here it is.
+// This isn't the most efficient way to do radix sort
+// since the radix is 10, but it was a fun exercise.
 function radixSortDecimalDigits(arr) {
 
     function numDigits(n, base=10) {
         let i;
         for (i = 1; base**(i-1) < n; i++) {}
-        return Math.max(Math.floor(i-1), 1);
+        return Math.max(Math.floor(i-1), 0) + 1;
     }
 
     function getDigit(num, i) {
-        return Math.floor(num / (10**(i-1))) % 10;
+        return Math.floor(Math.abs(num) / (10**(i-1))) % 10;
     }
 
     let maxNumDigits = 0;
@@ -256,17 +258,26 @@ function radixSortDecimalDigits(arr) {
         }
     }
 
-    let buckets = Array(10).fill();
+    let buckets = Array(20).fill();
     for (let digitPos = 1; digitPos <= maxNumDigits; digitPos++) {
         buckets = buckets.map(() => []);
         for (let i = 0; i < arr.length; i++) {
             let digit = getDigit(arr[i], digitPos);
             if (isNaN(digit)) {
-                continue
+                continue;
+            }
+            if (arr[i] >= 0) {
+                digit = digit + 10;
             }
             buckets[digit].push(arr[i]);
         }
-        for (let i = 0, k = 0; i < buckets.length; i++) {
+        let k = 0;
+        for (let i = 9; i >= 0; i--) {
+            for (let j = 0; j < buckets[i].length; j++) {
+                arr[k++] = buckets[i][j];
+            }
+        }
+        for (let i = 10; i < buckets.length; i++) {
             for (let j = 0; j < buckets[i].length; j++) {
                 arr[k++] = buckets[i][j];
             }
@@ -350,13 +361,23 @@ function runTests() {
 
             {
                 name: 'all sequential',
-                arr: [5, 4, 1, 3, 2],
-                expected: [1, 2, 3, 4, 5],
+                arr: [5, 4, 1, 3, 0, 2],
+                expected: [0, 1, 2, 3, 4, 5],
             },
             {
                 name: 'with duplicate values',
                 arr: [6, 6, 3, 3, 3, 1, 3, 2],
                 expected: [1, 2, 3, 3, 3, 3, 6, 6],
+            },
+            {
+                name: 'with negative numbers',
+                arr: [14, 7, 19, -3, -6, 0, 12, -9],
+                expected: [-9, -6, -3, 0, 7, 12, 14, 19],
+            },
+            {
+                name: 'more negatives',
+                arr: [355, -8632, -7647, 8989, 7727, -9333, -7522, -6265, 4217, -3158],
+                expected: [-9333, -8632, -7647, -7522, -6265, -3158, 355, 4217, 7727, 8989],
             },
             {
                 name: 'random array of 10 items',
@@ -384,7 +405,8 @@ function runTests() {
             console.log(`[${sort.name}] Running test "${c.name}"...`);
             let result = sort(c.arr);
             if (c.expected.length != result.length || !c.expected.every(function(value, index) { return value === result[index]})) {
-                console.error(`Got ${JSON.stringify(result, null, 2)}, want ${JSON.stringify(c.expected, null, 2)}`);
+                console.error(`Got ${JSON.stringify(result)}, want ${JSON.stringify(c.expected)}`);
+                process.exit(1);
             }
         });
     });
