@@ -29,8 +29,9 @@
 
     <div id="controls">
         <button id="shuffleBtn" type="button">Shuffle</button>
-        <button id="insertionSortBtn" type="button">Insertion Sort</button>
         <button id="quickSortBtn" type="button">Quick Sort</button>
+        <button id="heapSortBtn" type="button">Heap Sort</button>
+        <button id="insertionSortBtn" type="button">Insertion Sort (slow)</button>
         <br><hr><br>
     </div>
     <script type="module" defer>
@@ -46,17 +47,18 @@
             document.getElementById('insertionSortBtn').addEventListener('click', async function(e) {
                 elems = await insertionSort(elems, {cmp, swap});
                 console.log('done sorting');
-                console.log(elems);
             });
             document.getElementById('quickSortBtn').addEventListener('click', async function(e) {
                 elems = await quickSort(elems, {cmp, swap});
                 console.log('done sorting');
-                console.log(elems);
+            });
+            document.getElementById('heapSortBtn').addEventListener('click', async function(e) {
+                elems = await heapSort(elems, {cmp, swap});
+                console.log('done sorting');
             });
             document.getElementById('shuffleBtn').addEventListener('click', async function(e) {
                 elems = await shuffle(elems);
                 console.log('done shuffling');
-                console.log(elems);
             });
 
             let elems = Array.from(document.querySelectorAll('path')).sort(cmp);
