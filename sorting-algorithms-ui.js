@@ -6,24 +6,34 @@ function swap(arr, i, j) {
     arr[j] = tmp;
 }
 
-function selectionSort(arr) {
+function cmp(t1, t2) {
+    return t1 - t2;
+}
+
+async function selectionSort(arr, opts) {
+    let swapFunc = opts?.swap || swap;
+    let cmpFunc = opts?.cmp || cmp;
+
     for (let i = 0; i < arr.length - 1; i++) {
         let minIdx = i;
         for (let j = i + 1; j < arr.length; j++) {
-            if (arr[j] < arr[minIdx]) {
+            if (await cmpFunc(arr[j], arr[minIdx]) < 0) {
                 minIdx = j;
             }
         }
-        swap(arr, i, minIdx);
+        await swapFunc(arr, i, minIdx);
     }
 
     return arr;
 }
 
-function insertionSort(arr) {
+async function insertionSort(arr, opts) {
+    let swapFunc = opts?.swap || swap;
+    let cmpFunc = opts?.cmp || cmp;
+
     for (let i = 1; i < arr.length; i++) {
-        for (let j = i; j > 0 && arr[j] < arr[j - 1]; j--) {
-            swap(arr, j, j - 1);
+        for (let j = i; j > 0 && await cmpFunc(arr[j], arr[j-1]) < 0; j--) {
+            await swapFunc(arr, j, j-1);
         }
     }
 
@@ -63,78 +73,83 @@ function mergeSort(arr) {
     return arr;
 }
 
-function heapSort(arr) {
+async function heapSort(arr, opts) {
+    let swapFunc = opts?.swap || swap;
+    let cmpFunc = opts?.cmp || cmp;
 
-    function maxHeapify(arr, i, end) {
+    async function maxHeapify(arr, i, end) {
         let left = 2 * i + 1;
         let right = 2 * i + 2;
         let largest = i;
 
-        if (left <= end && arr[left] > arr[largest]) {
+        if (left <= end && await cmpFunc(arr[left], arr[largest]) > 0) {
             largest = left;
         }
-        if (right <= end && arr[right] > arr[largest]) {
+        if (right <= end && await cmpFunc(arr[right], arr[largest]) > 0) {
             largest = right;
         }
         if (largest != i) {
-            swap(arr, i, largest);
-            maxHeapify(arr, largest, end);
+            await swapFunc(arr, i, largest);
+            await maxHeapify(arr, largest, end);
         }
     }
 
-    function buildMaxHeap(arr) {
+    async function buildMaxHeap(arr) {
         for (let i = Math.floor(arr.length / 2); i >= 0; i--) {
-            maxHeapify(arr, i, arr.length - 1);
+            await maxHeapify(arr, i, arr.length - 1);
         }
     }
 
-    buildMaxHeap(arr);
+    await buildMaxHeap(arr);
 
     for (let end = arr.length - 1; end > 0; end--) {
-        swap(arr, end, 0);
-        maxHeapify(arr, 0, end - 1);
+        await swapFunc(arr, end, 0);
+        await maxHeapify(arr, 0, end - 1);
     }
 
     return arr;
 }
 
-function quickSort(arr, lo=null, hi=null) {
+async function quickSort(arr, opts) {
+    let swapFunc = opts?.swap || swap;
+    let cmpFunc = opts?.cmp || cmp;
 
-    function partition(arr, lo, hi) {
+    async function partition(arr, lo, hi) {
         let pivot = arr[Math.floor((hi + lo) / 2)];
         let i = lo - 1;
         let j = hi + 1;
 
         while (true) {
-            for (i++; arr[i] < pivot; i++) {}
-            for (j--; arr[j] > pivot; j--) {}
+            for (i++; await cmpFunc(arr[i], pivot) < 0; i++) {}
+            for (j--; await cmpFunc(arr[j], pivot) > 0; j--) {}
             if (i >= j) {
                 return j;
             }
-            swap(arr, i, j);
+            await swapFunc(arr, i, j);
         }
     }
 
-    if (lo == null && hi == null) {
-        lo = 0;
-        hi = arr.length - 1;
+    async function quickSortHelper(arr, lo, hi) {
+        if (lo >= 0 && hi >= 0 && lo < hi) {
+            let p = await partition(arr, lo, hi)
+            await quickSortHelper(arr, lo, p);
+            await quickSortHelper(arr, p + 1, hi);
+        }
+        return arr;
     }
 
-    if (lo >= 0 && hi >= 0 && lo < hi) {
-        let p = partition(arr, lo, hi)
-        quickSort(arr, lo, p);
-        quickSort(arr, p + 1, hi);
-    }
-
-    return arr;
+    return await quickSortHelper(arr, 0, arr.length - 1);
 }
 
-function bubbleSort(arr) {
+async function bubbleSort(arr, opts) {
+    let swapFunc = opts?.swap || swap;
+    let cmpFunc = opts?.cmp || cmp;
+
     while (true) {
         let didSwap = false
         for (let i = 1; i < arr.length; i++) {
-            if (arr[i] < arr[i - 1]) {
-                swap(arr, i, i - 1);
+            if (await cmpFunc(arr[i], arr[i-1]) < 0) {
+                await swapFunc(arr, i, i - 1);
                 didSwap = true
             }
         }
@@ -162,7 +177,10 @@ function shellSort(arr) {
     return arr;
 }
 
-function combSort(arr) {
+async function combSort(arr, opts) {
+    let swapFunc = opts?.swap || swap;
+    let cmpFunc = opts?.cmp || cmp;
+
     const SHRINK_FACTOR = 1.3;
     let gap = arr.length;
     let sorted = false;
@@ -174,8 +192,8 @@ function combSort(arr) {
             sorted = true;
         }
         for (let i = 0; i + gap < arr.length; i++) {
-            if (arr[i] > arr[i + gap]) {
-                swap(arr, i, i + gap);
+            if (await cmpFunc(arr[i], arr[i+gap]) > 0) {
+                await swapFunc(arr, i, i + gap);
                 sorted = false;
             }
         }

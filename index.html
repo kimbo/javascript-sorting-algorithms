@@ -18,52 +18,76 @@
             position: absolute;
         }
         path {
-            transition: transform 1s
+            transition: transform 500ms;
+        }
+        #controls, #controls>*{
+            position: relative;
+            min-width: 200px;
+            width: 100%;
         }
     </style>
 
-    <button id="insertionSortBtn" type="button">Insertion Sort</button>
-    <br><hr><br>
+    <div id="controls">
+        <button id="shuffleBtn" type="button">Shuffle</button>
+        <button id="insertionSortBtn" type="button">Insertion Sort</button>
+        <button id="quickSortBtn" type="button">Quick Sort</button>
+        <br><hr><br>
+    </div>
     <script type="module" defer>
-        import {mergeSort} from './sorting-algorithms.js'
-        console.log(JSON.stringify(mergeSort([5, 8, 2, 6, 7, 1, 5, 2, 9, 3, 5, 8, 2, 7])));
+        import {
+            quickSort,
+            insertionSort,
+            selectionSort,
+            heapSort,
+        } from './sorting-algorithms-ui.js'
 
         document.addEventListener('DOMContentLoaded', async function() {
-            let btn = document.getElementById('insertionSortBtn');
-            btn.addEventListener('click', insertionSort);
+            const delayMs = 10;
+            document.getElementById('insertionSortBtn').addEventListener('click', async function(e) {
+                elems = await insertionSort(elems, {cmp, swap});
+                console.log('done sorting');
+                console.log(elems);
+            });
+            document.getElementById('quickSortBtn').addEventListener('click', async function(e) {
+                elems = await quickSort(elems, {cmp, swap});
+                console.log('done sorting');
+                console.log(elems);
+            });
+            document.getElementById('shuffleBtn').addEventListener('click', async function(e) {
+                elems = await shuffle(elems);
+                console.log('done shuffling');
+                console.log(elems);
+            });
 
             let elems = Array.from(document.querySelectorAll('path')).sort(cmp);
+            let indexToPos = elems.map(getPos);
             let idToPos = {};
             let positions = elems.forEach(elem => {
                 idToPos[elem.id] = getPos(elem);
-                elem.setAttribute('data-pos', getPos(elem).join(" "));
                 elem.setAttribute('data-originalPos', getPos(elem).join(" "));
             });
-            
-            // let skull = document.getElementById('path1513');
-            // let leftFemur = document.getElementById('path493');
-            // let rightTibia = document.getElementById('path431');
-            // await swap(skull, leftFemur);
-            // await swap(leftFemur, rightTibia);
-            // await swap(skull, rightTibia);
-            // await swap(rightTibia, leftFemur);
-            await shuffle();
+
+            function cmp(e1, e2) {
+                let leftVal = parseInt(e1.id.replace('path', ''))
+                let rightVal = parseInt(e2.id.replace('path', ''))
+                return leftVal - rightVal;
+            }
 
             function randInt(n) {
                 return Math.floor(Math.random() * n);
             }
 
-            async function shuffle() {
-                let keep = [];
-                let copy = [...elems];
-                for (let i = 0; i < elems.length; i++) {
-                    let elem = elems[i];
-                    let idx = randInt(copy.length);
-                    await swap(elem, copy[idx], 10);
-                    keep.push(copy[idx]);
-                    copy.splice(idx, 1);
+            // based on https://stackoverflow.com/a/2450976/9638991
+            async function shuffle(arr) {
+                let currentIndex = arr.length,  randomIndex;
+                // While there remain elements to shuffle.
+                while (currentIndex != 0) {
+                    // Pick a remaining element.
+                    randomIndex = randInt(currentIndex);
+                    currentIndex--;
+                    await swap(arr, currentIndex, randomIndex, 1);
                 }
-                elems = keep;
+                return arr;
             }
 
             function delay(ms) {
@@ -72,64 +96,34 @@
 
             function getPos(elem) {
                 let bbox = elem.getBBox();
-                // let x = rect.left + (rect.right - rect.left) / 2;
-                // let y = rect.top + (rect.bottom - rect.top) / 2;
                 return [+bbox.x.toFixed(2), +bbox.y.toFixed(2)];
             }
 
-            async function swap(e1, e2, delayMs=3000) {
-                let [x1, y1] = e1.dataset.pos.split(" ").map((val) => {
-                    return +val;
-                });
-                let [x2, y2] = e2.dataset.pos.split(" ").map((val) => {
-                    return +val;
-                });
+            async function swap(elems, i, j) {
+                let [x1, y1] = indexToPos[i];
+                let [x2, y2] = indexToPos[j];
                 
-                let [ox1, oy1] = e1.dataset.originalPos.split(" ").map((val) => {
+                let [ox1, oy1] = elems[i].dataset.originalPos.split(" ").map((val) => {
                     return +val;
                 });
-                let [ox2, oy2] = e2.dataset.originalPos.split(" ").map((val) => {
+                let [ox2, oy2] = elems[j].dataset.originalPos.split(" ").map((val) => {
                     return +val;
                 });
 
-                // console.log('--> swap()')
-                // console.log(`ox1=${ox1},oy1=${oy1}`)
-                // console.log(`x1=${x1},y1=${y1}`)
-                // console.log(`ox2=${ox2},oy2=${oy2}`)
-                // console.log(`x2=${x2},y2=${y2}`)
                 if (x2 == ox1 && y2 == oy1) {
-                    e1.setAttribute('transform', `translate(0 0)`);
-                    e1.setAttribute('data-pos', e1.dataset.originalPos);
+                    elems[i].setAttribute('transform', `translate(0 0)`);
                 } else {
-                    e1.setAttribute('transform', `translate(-${ox1} -${oy1}) translate(${x2} ${y2})`);
-                    e1.setAttribute('data-pos', [x2, y2].join(" "));
+                    elems[i].setAttribute('transform', `translate(-${ox1} -${oy1}) translate(${x2} ${y2})`);
                 }
                 if (x1 == ox2 && y1 == oy2) {
-                    e2.setAttribute('transform', `translate(0 0)`);
-                    e2.setAttribute('data-pos', e2.dataset.originalPos);
+                    elems[j].setAttribute('transform', `translate(0 0)`);
                 } else {
-                    e2.setAttribute('transform', `translate(-${ox2} -${oy2}) translate(${x1} ${y1})`);
-                    e2.setAttribute('data-pos', [x1, y1].join(" "));
+                    elems[j].setAttribute('transform', `translate(-${ox2} -${oy2}) translate(${x1} ${y1})`);
                 }
-                if (delayMs) {
-                    await delay(delayMs);
-                }
-            }
-
-            function cmp(e1, e2) {
-                let leftVal = parseInt(e1.id.replace('path', ''))
-                let rightVal = parseInt(e2.id.replace('path', ''))
-                console.log(`${leftVal} - ${rightVal} = ${leftVal-rightVal}`)
-                return leftVal - rightVal;
-            }
-
-            async function insertionSort() {
-                for (let i = 0; i < elems.length; i++) {
-                    for (let j = i; j > 0 && cmp(elems[j - 1], elems[j]) < 0; j--) {
-                        swap(elems[j], elems[j - 1], 1000);
-                    }
-                }
-                console.log(elems);
+                let tmp = elems[i];
+                elems[i] = elems[j];
+                elems[j] = tmp;
+                await delay(delayMs);
             }
         })
     </script>
