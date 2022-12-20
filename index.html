@@ -20,10 +20,15 @@
         path {
             transition: transform 500ms;
         }
-        #controls, #controls>*{
-            position: relative;
+        #controls {
             min-width: 200px;
             width: 100%;
+        }
+        #controls, #controls>*{
+            position: relative;
+        }
+        #progress-bar{
+            position: relative;
         }
     </style>
 
@@ -31,22 +36,31 @@
         <button id="shuffleBtn" type="button">Shuffle</button>
         <button id="quickSortBtn" type="button">Quick Sort</button>
         <button id="heapSortBtn" type="button">Heap Sort</button>
+        <button id="combSortBtn" type="button">Comb Sort</button>
         <button id="insertionSortBtn" type="button">Insertion Sort (slow)</button>
-        <br><hr><br>
+        <br>
+        <label>Swap delay (ms): <input type="number" id="swapDelayMs" value="1"></label>
+        <br>
+        <label>Transform delay (ms): <input type="number" id="transformDelayMs" value="500"></label>
+        <hr>
     </div>
+    <!-- <div id="progress-bar"></div> -->
     <script type="module" defer>
         import {
             quickSort,
             insertionSort,
             selectionSort,
             heapSort,
+            combSort,
         } from './sorting-algorithms-ui.js'
 
         document.addEventListener('DOMContentLoaded', async function() {
-            const delayMs = 10;
-            document.getElementById('insertionSortBtn').addEventListener('click', async function(e) {
-                elems = await insertionSort(elems, {cmp, swap});
-                console.log('done sorting');
+            let delayMs = 1;
+            document.getElementById('swapDelayMs').addEventListener('change', function(e) {
+                delayMs = e.target.value;
+            });
+            document.getElementById('transformDelayMs').addEventListener('change', function(e) {
+                document.querySelectorAll('path').forEach(el=>el.style.transition = `transform ${e.target.value}ms`);
             });
             document.getElementById('quickSortBtn').addEventListener('click', async function(e) {
                 elems = await quickSort(elems, {cmp, swap});
@@ -54,6 +68,14 @@
             });
             document.getElementById('heapSortBtn').addEventListener('click', async function(e) {
                 elems = await heapSort(elems, {cmp, swap});
+                console.log('done sorting');
+            });
+            document.getElementById('combSortBtn').addEventListener('click', async function(e) {
+                elems = await combSort(elems, {cmp, swap});
+                console.log('done sorting');
+            });
+            document.getElementById('insertionSortBtn').addEventListener('click', async function(e) {
+                elems = await insertionSort(elems, {cmp, swap});
                 console.log('done sorting');
             });
             document.getElementById('shuffleBtn').addEventListener('click', async function(e) {
@@ -68,6 +90,10 @@
                 idToPos[elem.id] = getPos(elem);
                 elem.setAttribute('data-originalPos', getPos(elem).join(" "));
             });
+
+            // function updateProgress(op, perc) {
+            //     document.getElementById('progress-bar').innerHTML = `${op}: ${(perc*100).toFixed(1)}% [${Array(Math.floor(perc*100/4)).fill('█').join('')}${Array(Math.ceil((100-(100*perc))/4)).fill('░').join('')}]`;
+            // }
 
             function cmp(e1, e2) {
                 let leftVal = parseInt(e1.id.replace('path', ''))
@@ -87,6 +113,7 @@
                     // Pick a remaining element.
                     randomIndex = randInt(currentIndex);
                     currentIndex--;
+                    // updateProgress('Shuffling', (arr.length-currentIndex) / arr.length);
                     await swap(arr, currentIndex, randomIndex, 1);
                 }
                 return arr;
